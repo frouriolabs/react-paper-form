@@ -1,12 +1,21 @@
 {
-  "name": "-",
-  "private": true,
+  "name": "react-paper-form",
   "version": "0.0.0",
+  "description": "Paper form viewer for react",
+  "author": "Frourio, Inc.",
+  "license": "MIT",
+  "types": "dist/components/PaperForm.d.ts",
+  "main": "dist/components/PaperForm.js",
+  "files": [
+    "dist/components"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc",
     "viteBuild": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.0.0",
