@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
 import styled from 'styled-components'
+import './App.css'
 import { PaperViewer } from './components/PaperViewer'
+import logo from './logo.svg'
 
 const Container = styled.div`
   width: 80vw;
@@ -12,16 +12,14 @@ const Container = styled.div`
 
 const Text = styled.div`
   position: absolute;
-  color: red;
   font-size: 24px;
   font-weight: bold;
   line-height: 1;
+  color: red;
   text-align: center;
 `
 
-const texts = [
-  { id: 0, top: 20, left: 20, text: 'sample text' }
-]
+const texts = [{ id: 0, top: 20, left: 20, text: 'sample text' }]
 
 function App() {
   const [count, setCount] = useState(0)
@@ -30,7 +28,11 @@ function App() {
     <div className="App">
       <Container>
         <PaperViewer src="/src/frourio.png">
-          {texts.map(t => <Text key={t.id} style={{ top: `${t.top}px`, left: `${t.left}px` }}>{t.text}</Text>)}
+          {texts.map((t) => (
+            <Text key={t.id} style={{ top: `${t.top}px`, left: `${t.left}px` }}>
+              {t.text}
+            </Text>
+          ))}
         </PaperViewer>
       </Container>
       <header className="App-header">

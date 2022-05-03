@@ -1,13 +1,14 @@
-import React, { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react'
+import type { PropsWithChildren } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 const Container = styled.div`
   position: relative;
   height: 100%;
-  background: #555;
   overflow: hidden;
-  user-select: none;
   cursor: move;
+  user-select: none;
+  background: #555;
 `
 
 const Viewer = styled.div`
@@ -18,17 +19,20 @@ const Viewer = styled.div`
 `
 
 const TransformContainer = styled.div<{ src: string }>`
-  background: center/contain no-repeat url(${props => props.src});
-  transform-origin: left top;
+  background: center/contain no-repeat url(${(props) => props.src});
   box-shadow: 0 0 8px 8px #2227;
+  transform-origin: left top;
 `
 
-const ShapeContainer = styled.div<{ scale: number; naturalSize: { width: number; height: number } }>`
+const ShapeContainer = styled.div<{
+  scale: number
+  naturalSize: { width: number; height: number }
+}>`
   position: relative;
-  width: ${props => props.naturalSize.width}px;
-  height: ${props => props.naturalSize.height}px;
-  transform-origin: left top;
+  width: ${(props) => props.naturalSize.width}px;
+  height: ${(props) => props.naturalSize.height}px;
   transform: scale(${(props) => props.scale});
+  transform-origin: left top;
 `
 
 const FrontPanel = styled.div`
@@ -47,7 +51,7 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 })
   const containerRef = useRef<HTMLDivElement>(null)
   const [viewerWidth, setViewerWidth] = useState(0)
-  const aspect = useMemo(() => naturalSize.width/ naturalSize.height,  [naturalSize])
+  const aspect = useMemo(() => naturalSize.width / naturalSize.height, [naturalSize])
   const viewerHeight = useMemo(() => viewerWidth / aspect, [viewerWidth, aspect])
   const [scale, setScale] = useState(1)
   const [prevPanPoint, setPrevPanPoint] = useState<{ x: number; y: number } | null>(null)
@@ -100,7 +104,7 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
     onZoom(
       (e.touches[0].clientX + e.touches[1].clientX) / 2,
       (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      calcDistance(e.touches) / baseDistance - scale,
+      calcDistance(e.touches) / baseDistance - scale
     )
   }
   const onWheel = (e: React.WheelEvent) => {
