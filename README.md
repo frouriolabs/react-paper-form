@@ -1,10 +1,10 @@
-# React Paper Form
+# React Paper Viewer
 
 ```tsx
-import { PaperForm } from 'react-paper-form'
+import { PaperViewer } from 'react-paper-viewer'
 
 function App() {
-  return <PaperForm src="/src/logo.svg" />
+  return <PaperViewer src="/src/logo.svg" />
 }
 
 export default App

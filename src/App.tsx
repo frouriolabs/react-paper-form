@@ -2,9 +2,9 @@ import { useState } from 'react'
 import logo from './logo.svg'
 import './App.css'
 import styled from 'styled-components'
-import { PaperForm } from './components/PaperForm'
+import { PaperViewer } from './components/PaperViewer'
 
-const FormContainer = styled.div`
+const Container = styled.div`
   width: 80vw;
   height: 60vh;
   margin: 40px auto;
@@ -28,11 +28,11 @@ function App() {
 
   return (
     <div className="App">
-      <FormContainer>
-        <PaperForm src="/src/frourio.png">
+      <Container>
+        <PaperViewer src="/src/frourio.png">
           {texts.map(t => <Text key={t.id} style={{ top: `${t.top}px`, left: `${t.left}px` }}>{t.text}</Text>)}
-        </PaperForm>
-      </FormContainer>
+        </PaperViewer>
+      </Container>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>Hello Vite + React!</p>

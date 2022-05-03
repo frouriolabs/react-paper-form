@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, ReactElement, useEffect, useMemo, useRef, useState } from 'react'
+import React, { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 const Container = styled.div`
@@ -43,7 +43,7 @@ const ZOOM_MAX = 3
 const calcDistance = (touches: React.TouchList) =>
   ((touches[0].pageX - touches[1].pageX) ** 2 + (touches[0].pageY - touches[1].pageY) ** 2) ** 0.5
 
-export const PaperForm = (props: PropsWithChildren<{ src: string }>) => {
+export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 })
   const containerRef = useRef<HTMLDivElement>(null)
   const [viewerWidth, setViewerWidth] = useState(0)
