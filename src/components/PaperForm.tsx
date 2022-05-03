@@ -19,6 +19,7 @@ const Viewer = styled.div`
 const TransformContainer = styled.div`
   transform-origin: left top;
   box-shadow: 0 0 8px 8px #2227;
+  background: #fff;
 `
 
 const ShapeContainer = styled.div<{ src: string; scale: number; naturalSize: { width: number; height: number } }>`
@@ -40,16 +41,20 @@ const CtrlPanel = styled.div`
 `
 
 const ZOOM_MAX = 3
+const calcDistance = (touches: TouchList | React.TouchList) =>
+  ((touches[0].pageX - touches[1].pageX) ** 2 + (touches[0].pageY - touches[1].pageY) ** 2) ** 0.5
 
 export const PaperForm = (props: { src: string; untouchable?: ReactElement }) => {
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 })
   const containerRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const [viewerWidth, setViewerWidth] = useState(0)
   const aspect = useMemo(() => naturalSize.width/ naturalSize.height,  [naturalSize])
   const viewerHeight = useMemo(() => viewerWidth / aspect, [viewerWidth, aspect])
   const [scale, setScale] = useState(1)
   const [prevPanPoint, setPrevPanPoint] = useState<{ x: number; y: number } | null>(null)
   const [translate, setTranslate] = useState({ x: 0, y: 0 })
+  const [baseDistance, setBaseDistance] = useState(0)
   const clampTranslate = (scale: number, translate: { x: number; y: number }) => ({
     x: Math.max(viewerWidth / 2 - viewerWidth * scale, Math.min(viewerWidth / 2, translate.x)),
     y: Math.max(viewerHeight / 2 - viewerHeight * scale, Math.min(viewerHeight / 2, translate.y)),
@@ -67,7 +72,7 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
   const onMouseDown = (e: React.MouseEvent) => {
     setPrevPanPoint({ x: e.pageX, y: e.pageY })
   }
-  const onMouseMove = (e: React.MouseEvent) => {
+  const onMouseMove = (e: { pageX: number; pageY: number }) => {
     if (!prevPanPoint) return
 
     const currentPanPoint = { x: e.pageX, y: e.pageY }
@@ -78,6 +83,17 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
       })
     )
     setPrevPanPoint(currentPanPoint)
+  }
+  const onTouchmove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      onMouseMove(e.touches[0])
+    } else if (e.touches.length === 2) {
+      onZoom(
+        (e.touches[0].clientX + e.touches[1].clientX) / 2 ,
+        (e.touches[0].clientY + e.touches[1].clientY) / 2 ,
+        calcDistance(e.touches) / baseDistance - scale
+      )
+    }
   }
   const onWheel = (e: React.WheelEvent) => {
     onZoom(e.nativeEvent.offsetX, e.nativeEvent.offsetY, e.deltaY < 0 ? 0.2 : -0.2)
@@ -92,7 +108,30 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
   }, [props.src])
 
   useEffect(() => {
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+  
+      if (e.touches.length === 1) {
+        setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
+      } else if (e.touches.length === 2) {
+        setPrevPanPoint(null)
+        setBaseDistance(calcDistance(e.touches) / scale)
+      }
+    }
+
+    panelRef.current?.addEventListener('touchstart', onTouchStart, false)
+
+    return () => {
+      panelRef.current?.removeEventListener('touchstart', onTouchStart, false)
+    }
+  }, [scale])
+
+  useEffect(() => {
+    const preventDefault = (e: Event) => e.preventDefault()
     const onMouseup = () => setPrevPanPoint(null)
+    const onTouchend = (e: TouchEvent) => {
+      if (e.touches.length === 0) setPrevPanPoint(null)
+    }
     const resize = () => {
       if (!containerRef.current) return
 
@@ -104,13 +143,16 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
     }
 
     window.addEventListener('mouseup', onMouseup, false)
+    window.addEventListener('touchend', onTouchend, false)
     window.addEventListener('resize', resize, false)
-    containerRef.current?.addEventListener('wheel', e => e.preventDefault(), false)
+    containerRef.current?.addEventListener('wheel', preventDefault, false)
     resize()
 
     return () => {
       window.removeEventListener('mouseup', onMouseup, false)
+      window.removeEventListener('touchend', onTouchend, false)
       window.removeEventListener('resize', resize, false)
+      containerRef.current?.removeEventListener('wheel', preventDefault, false)
     }
   }, [aspect])
 
@@ -127,7 +169,12 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
           <ShapeContainer src={props.src} scale={viewerWidth / naturalSize.width} naturalSize={naturalSize}>
             {props.untouchable}
           </ShapeContainer>
-          <CtrlPanel onMouseDown={onMouseDown} onWheel={onWheel} />
+          <CtrlPanel
+            ref={panelRef}
+            onMouseDown={onMouseDown}
+            onWheel={onWheel}
+            onTouchMove={onTouchmove}
+          />
         </TransformContainer>
       </Viewer>
     </Container>
