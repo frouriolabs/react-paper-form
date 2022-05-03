@@ -13,13 +13,14 @@ const FormContainer = styled.div`
 const Text = styled.div`
   position: absolute;
   color: red;
+  font-size: 24px;
   font-weight: bold;
   line-height: 1;
   text-align: center;
 `
 
 const texts = [
-  {id: 0, top: 10, left: 10, text: 'aaa' }
+  { id: 0, top: 20, left: 20, text: 'sample text' }
 ]
 
 function App() {
@@ -28,7 +29,9 @@ function App() {
   return (
     <div className="App">
       <FormContainer>
-        <PaperForm src="/src/logo.svg" untouchable={<>{texts.map(t => <Text key={t.id} style={{top: `${t.top}px`, left: `${t.left}px`}}>{t.text}</Text>)}</>}/>
+        <PaperForm src="/src/frourio.png">
+          {texts.map(t => <Text key={t.id} style={{ top: `${t.top}px`, left: `${t.left}px` }}>{t.text}</Text>)}
+        </PaperForm>
       </FormContainer>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />

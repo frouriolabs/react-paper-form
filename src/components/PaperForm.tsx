@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useMemo, useRef, useState } from 'react'
+import React, { PropsWithChildren, ReactElement, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 const Container = styled.div`
@@ -7,6 +7,7 @@ const Container = styled.div`
   background: #555;
   overflow: hidden;
   user-select: none;
+  cursor: move;
 `
 
 const Viewer = styled.div`
@@ -16,38 +17,35 @@ const Viewer = styled.div`
   transform: translate(-50%, -50%);
 `
 
-const TransformContainer = styled.div`
+const TransformContainer = styled.div<{ src: string }>`
+  background: center/contain no-repeat url(${props => props.src});
   transform-origin: left top;
   box-shadow: 0 0 8px 8px #2227;
-  background: #fff;
 `
 
-const ShapeContainer = styled.div<{ src: string; scale: number; naturalSize: { width: number; height: number } }>`
+const ShapeContainer = styled.div<{ scale: number; naturalSize: { width: number; height: number } }>`
   position: relative;
   width: ${props => props.naturalSize.width}px;
   height: ${props => props.naturalSize.height}px;
-  background: center/contain no-repeat url(${props => props.src});
   transform-origin: left top;
   transform: scale(${(props) => props.scale});
 `
 
-const CtrlPanel = styled.div`
+const FrontPanel = styled.div`
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  cursor: move;
 `
 
 const ZOOM_MAX = 3
-const calcDistance = (touches: TouchList | React.TouchList) =>
+const calcDistance = (touches: React.TouchList) =>
   ((touches[0].pageX - touches[1].pageX) ** 2 + (touches[0].pageY - touches[1].pageY) ** 2) ** 0.5
 
-export const PaperForm = (props: { src: string; untouchable?: ReactElement }) => {
+export const PaperForm = (props: PropsWithChildren<{ src: string }>) => {
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 })
   const containerRef = useRef<HTMLDivElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
   const [viewerWidth, setViewerWidth] = useState(0)
   const aspect = useMemo(() => naturalSize.width/ naturalSize.height,  [naturalSize])
   const viewerHeight = useMemo(() => viewerWidth / aspect, [viewerWidth, aspect])
@@ -84,24 +82,26 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
     )
     setPrevPanPoint(currentPanPoint)
   }
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
-    } else if (e.touches.length === 2) {
-      setPrevPanPoint(null)
-      setBaseDistance(calcDistance(e.touches) / scale)
-    }
+  const onTouchPanStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
   }
-  const onTouchmove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      onMouseMove(e.touches[0])
-    } else if (e.touches.length === 2) {
-      onZoom(
-        (e.touches[0].clientX + e.touches[1].clientX) / 2 ,
-        (e.touches[0].clientY + e.touches[1].clientY) / 2 ,
-        calcDistance(e.touches) / baseDistance - scale
-      )
-    }
+  const onTouchPanMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) onMouseMove(e.touches[0])
+  }
+  const onTouchZoomStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 2) return
+    e.stopPropagation()
+    setPrevPanPoint(null)
+    setBaseDistance(calcDistance(e.touches) / scale)
+  }
+  const onTouchZoomMove = (e: React.TouchEvent) => {
+    if (e.touches.length !== 2) return
+    e.stopPropagation()
+    onZoom(
+      (e.touches[0].clientX + e.touches[1].clientX) / 2,
+      (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      calcDistance(e.touches) / baseDistance - scale,
+    )
   }
   const onWheel = (e: React.WheelEvent) => {
     onZoom(e.nativeEvent.offsetX, e.nativeEvent.offsetY, e.deltaY < 0 ? 0.2 : -0.2)
@@ -109,9 +109,7 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
 
   useEffect(() => {
     const img = new Image()
-    img.onload = () => {
-      setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight })
-    }
+    img.onload = () => setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight })
     img.src = props.src
   }, [props.src])
 
@@ -150,24 +148,29 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
   }, [aspect])
 
   return (
-    <Container ref={containerRef} onMouseMove={onMouseMove}>
+    <Container
+      ref={containerRef}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onTouchStart={onTouchPanStart}
+      onTouchMove={onTouchPanMove}
+    >
       <Viewer style={{ width: `${viewerWidth}px`, height: `${viewerHeight}px` }}>
         <TransformContainer
+          src={props.src}
           style={{
             width: `${viewerWidth}px`,
             height: `${viewerHeight}px`,
             transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
           }}
         >
-          <ShapeContainer src={props.src} scale={viewerWidth / naturalSize.width} naturalSize={naturalSize}>
-            {props.untouchable}
+          <ShapeContainer scale={viewerWidth / naturalSize.width} naturalSize={naturalSize}>
+            {props.children}
           </ShapeContainer>
-          <CtrlPanel
-            ref={panelRef}
-            onMouseDown={onMouseDown}
+          <FrontPanel
             onWheel={onWheel}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchmove}
+            onTouchStart={onTouchZoomStart}
+            onTouchMove={onTouchZoomMove}
           />
         </TransformContainer>
       </Viewer>
