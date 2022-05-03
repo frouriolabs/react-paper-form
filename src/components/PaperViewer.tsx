@@ -1,47 +1,29 @@
 import type { PropsWithChildren } from 'react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import styled from 'styled-components'
 
-const Container = styled.div`
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  cursor: move;
-  user-select: none;
-  background: #555;
-`
+const containerStyle: React.CSSProperties = {
+  position: 'relative',
+  height: '100%',
+  overflow: 'hidden',
+  cursor: 'move',
+  userSelect: 'none',
+  background: '#555',
+}
 
-const Viewer = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-`
+const viewerStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+}
 
-const TransformContainer = styled.div<{ src: string }>`
-  background: center/contain no-repeat url(${(props) => props.src});
-  box-shadow: 0 0 8px 8px #2227;
-  transform-origin: left top;
-`
-
-const ShapeContainer = styled.div<{
-  scale: number
-  naturalSize: { width: number; height: number }
-}>`
-  position: relative;
-  width: ${(props) => props.naturalSize.width}px;
-  height: ${(props) => props.naturalSize.height}px;
-  transform: scale(${(props) => props.scale});
-  transform-origin: left top;
-`
-
-const FrontPanel = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-`
+const frontPanelStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+}
 
 const ZOOM_MAX = 3
 const calcDistance = (touches: React.TouchList) =>
@@ -152,32 +134,44 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
   }, [aspect])
 
   return (
-    <Container
+    <div
       ref={containerRef}
+      style={containerStyle}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onTouchStart={onTouchPanStart}
       onTouchMove={onTouchPanMove}
     >
-      <Viewer style={{ width: `${viewerWidth}px`, height: `${viewerHeight}px` }}>
-        <TransformContainer
-          src={props.src}
+      <div style={{ ...viewerStyle, width: `${viewerWidth}px`, height: `${viewerHeight}px` }}>
+        <div
           style={{
+            boxShadow: '0 0 8px 8px #2227',
+            transformOrigin: 'left top',
             width: `${viewerWidth}px`,
             height: `${viewerHeight}px`,
+            background: `center/contain no-repeat url(${props.src})`,
             transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
           }}
         >
-          <ShapeContainer scale={viewerWidth / naturalSize.width} naturalSize={naturalSize}>
+          <div
+            style={{
+              position: 'relative',
+              transformOrigin: 'left top',
+              width: `${naturalSize.width}px`,
+              height: `${naturalSize.height}px`,
+              transform: `scale(${viewerWidth / naturalSize.width})`,
+            }}
+          >
             {props.children}
-          </ShapeContainer>
-          <FrontPanel
+          </div>
+          <div
+            style={frontPanelStyle}
             onWheel={onWheel}
             onTouchStart={onTouchZoomStart}
             onTouchMove={onTouchZoomMove}
           />
-        </TransformContainer>
-      </Viewer>
-    </Container>
+        </div>
+      </div>
+    </div>
   )
 }

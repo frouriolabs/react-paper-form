@@ -1,7 +1,7 @@
 # React Paper Viewer
 
 ```sh
-$ yarn add react-paper-viewer styled-components
+$ yarn add react-paper-viewer
 ```
 
 ```tsx
