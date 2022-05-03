@@ -2,10 +2,18 @@
   "name": "react-paper-form",
   "version": "0.0.2",
   "description": "Paper form viewer for react",
-  "author": "Frourio, Inc.",
+  "author": "Frourio Inc.",
   "license": "MIT",
   "types": "dist/components/PaperForm.d.ts",
   "main": "dist/components/PaperForm.js",
+  "homepage": "https://github.com/frouriolabs/react-paper-form#readme",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:frouriolabs/react-paper-form.git"
+  },
+  "bugs": {
+    "url": "https://github.com/frouriolabs/react-paper-form/issues"
+  },
   "files": [
     "dist/components"
   ],
