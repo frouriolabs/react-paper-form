@@ -84,6 +84,14 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
     )
     setPrevPanPoint(currentPanPoint)
   }
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
+    } else if (e.touches.length === 2) {
+      setPrevPanPoint(null)
+      setBaseDistance(calcDistance(e.touches) / scale)
+    }
+  }
   const onTouchmove = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
       onMouseMove(e.touches[0])
@@ -108,30 +116,24 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
   }, [props.src])
 
   useEffect(() => {
-    const onTouchStart = (e: TouchEvent) => {
-      e.preventDefault()
-  
-      if (e.touches.length === 1) {
-        setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
-      } else if (e.touches.length === 2) {
-        setPrevPanPoint(null)
-        setBaseDistance(calcDistance(e.touches) / scale)
-      }
-    }
-
-    panelRef.current?.addEventListener('touchstart', onTouchStart, false)
-
-    return () => {
-      panelRef.current?.removeEventListener('touchstart', onTouchStart, false)
-    }
-  }, [scale])
-
-  useEffect(() => {
     const preventDefault = (e: Event) => e.preventDefault()
     const onMouseup = () => setPrevPanPoint(null)
     const onTouchend = (e: TouchEvent) => {
       if (e.touches.length === 0) setPrevPanPoint(null)
     }
+
+    window.addEventListener('mouseup', onMouseup, false)
+    window.addEventListener('touchend', onTouchend, false)
+    containerRef.current?.addEventListener('wheel', preventDefault, false)
+    containerRef.current?.addEventListener('touchstart', preventDefault, false)
+
+    return () => {
+      window.removeEventListener('mouseup', onMouseup, false)
+      window.removeEventListener('touchend', onTouchend, false)
+    }
+  }, [])
+
+  useEffect(() => {
     const resize = () => {
       if (!containerRef.current) return
 
@@ -141,19 +143,10 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
       setScale(1)
       setTranslate({ x: 0, y: 0 })
     }
-
-    window.addEventListener('mouseup', onMouseup, false)
-    window.addEventListener('touchend', onTouchend, false)
     window.addEventListener('resize', resize, false)
-    containerRef.current?.addEventListener('wheel', preventDefault, false)
     resize()
 
-    return () => {
-      window.removeEventListener('mouseup', onMouseup, false)
-      window.removeEventListener('touchend', onTouchend, false)
-      window.removeEventListener('resize', resize, false)
-      containerRef.current?.removeEventListener('wheel', preventDefault, false)
-    }
+    return () => window.removeEventListener('resize', resize, false)
   }, [aspect])
 
   return (
@@ -173,6 +166,7 @@ export const PaperForm = (props: { src: string; untouchable?: ReactElement }) =>
             ref={panelRef}
             onMouseDown={onMouseDown}
             onWheel={onWheel}
+            onTouchStart={onTouchStart}
             onTouchMove={onTouchmove}
           />
         </TransformContainer>
