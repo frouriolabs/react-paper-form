@@ -68,26 +68,26 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
     )
     setPrevPanPoint(currentPanPoint)
   }
-  const onTouchPanStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setPrevPanPoint({ x: e.touches[0].pageX, y: e.touches[0].pageY })
+    } else if (e.touches.length === 2) {
+      setPrevPanPoint(null)
+      setBaseDistance(calcDistance(e.touches) / scale)
+    }
   }
-  const onTouchPanMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) onMouseMove(e.touches[0])
-  }
-  const onTouchZoomStart = (e: React.TouchEvent) => {
-    if (e.touches.length !== 2) return
-    e.stopPropagation()
-    setPrevPanPoint(null)
-    setBaseDistance(calcDistance(e.touches) / scale)
-  }
-  const onTouchZoomMove = (e: React.TouchEvent) => {
-    if (e.touches.length !== 2) return
-    e.stopPropagation()
-    onZoom(
-      (e.touches[0].clientX + e.touches[1].clientX) / 2,
-      (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      calcDistance(e.touches) / baseDistance - scale
-    )
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      onMouseMove(e.touches[0])
+    } else if (e.touches.length === 2) {
+      const rect = e.currentTarget.getBoundingClientRect()
+
+      onZoom(
+        ((e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left) / scale,
+        ((e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top) / scale,
+        calcDistance(e.touches) / baseDistance - scale
+      )
+    }
   }
   const onWheel = (e: React.WheelEvent) => {
     onZoom(e.nativeEvent.offsetX, e.nativeEvent.offsetY, e.deltaY < 0 ? 0.2 : -0.2)
@@ -134,14 +134,7 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
   }, [aspect])
 
   return (
-    <div
-      ref={containerRef}
-      style={containerStyle}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onTouchStart={onTouchPanStart}
-      onTouchMove={onTouchPanMove}
-    >
+    <div ref={containerRef} style={containerStyle}>
       <div style={{ ...viewerStyle, width: `${viewerWidth}px`, height: `${viewerHeight}px` }}>
         <div
           style={{
@@ -166,9 +159,11 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
           </div>
           <div
             style={frontPanelStyle}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
             onWheel={onWheel}
-            onTouchStart={onTouchZoomStart}
-            onTouchMove={onTouchZoomMove}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
           />
         </div>
       </div>
