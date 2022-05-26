@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/frouriolabs/react-paper-viewer/compare/v0.1.0...v0.1.1) (2022-05-26)
+
+
+### Bug Fixes
+
+* recalc touch position ([ca9d7a5](https://github.com/frouriolabs/react-paper-viewer/commit/ca9d7a5d5b1d30fb7856601bd046e2bdf7c98224))
+
 ## [0.1.0](https://github.com/frouriolabs/react-paper-viewer/compare/v0.0.2...v0.1.0) (2022-05-03)
 
 
