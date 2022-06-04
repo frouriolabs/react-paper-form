@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 const containerStyle: React.CSSProperties = {
   position: 'relative',
@@ -93,13 +93,13 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
     onZoom(e.nativeEvent.offsetX, e.nativeEvent.offsetY, e.deltaY < 0 ? 0.2 : -0.2)
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const img = new Image()
     img.onload = () => setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight })
     img.src = props.src
   }, [props.src])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const preventDefault = (e: Event) => e.preventDefault()
     const onMouseup = () => setPrevPanPoint(null)
     const onTouchend = (e: TouchEvent) => {
@@ -108,8 +108,8 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
 
     window.addEventListener('mouseup', onMouseup, false)
     window.addEventListener('touchend', onTouchend, false)
-    containerRef.current?.addEventListener('wheel', preventDefault, false)
-    containerRef.current?.addEventListener('touchstart', preventDefault, false)
+    containerRef.current?.addEventListener('wheel', preventDefault, { passive: false })
+    containerRef.current?.addEventListener('touchstart', preventDefault, { passive: false })
 
     return () => {
       window.removeEventListener('mouseup', onMouseup, false)
@@ -117,13 +117,17 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const resize = () => {
       if (!containerRef.current) return
 
       const w = containerRef.current.clientWidth
       const h = containerRef.current.clientHeight
-      setViewerWidth(w / h > aspect ? h * aspect : w)
+      const newViewerWidth = w / h > aspect ? h * aspect : w
+
+      if (viewerWidth === newViewerWidth) return // for resizing address bar of iOS15 safari
+
+      setViewerWidth(newViewerWidth)
       setScale(1)
       setTranslate({ x: 0, y: 0 })
     }
@@ -131,7 +135,7 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
     resize()
 
     return () => window.removeEventListener('resize', resize, false)
-  }, [aspect])
+  }, [aspect, viewerWidth])
 
   return (
     <div ref={containerRef} style={containerStyle}>
