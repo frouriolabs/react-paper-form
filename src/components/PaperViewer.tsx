@@ -25,11 +25,12 @@ const frontPanelStyle: React.CSSProperties = {
   height: '100%',
 }
 
-const ZOOM_MAX = 3
 const calcDistance = (touches: React.TouchList) =>
   ((touches[0].pageX - touches[1].pageX) ** 2 + (touches[0].pageY - touches[1].pageY) ** 2) ** 0.5
 
-export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
+export const PaperViewer = (
+  props: PropsWithChildren<{ src: string; zoomMax?: number; zoomMin?: number }>
+) => {
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 })
   const containerRef = useRef<HTMLDivElement>(null)
   const [viewerWidth, setViewerWidth] = useState(0)
@@ -44,7 +45,10 @@ export const PaperViewer = (props: PropsWithChildren<{ src: string }>) => {
     y: Math.max(viewerHeight / 2 - viewerHeight * scale, Math.min(viewerHeight / 2, translate.y)),
   })
   const onZoom = (pointX: number, pointY: number, scaleDelta: number) => {
-    const newScale = Math.min(ZOOM_MAX, Math.max(0.8, scale + scaleDelta))
+    const newScale = Math.min(
+      props.zoomMax ?? 5,
+      Math.max(props.zoomMin ?? 0.8, scale + scaleDelta)
+    )
     setScale(newScale)
     setTranslate(
       clampTranslate(newScale, {
