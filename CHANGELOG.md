@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/frouriolabs/react-paper-viewer/compare/v0.1.2...v0.2.0) (2022-06-04)
+
+
+### Features
+
+* add zoomMax and zoomMIn option ([60f5c8e](https://github.com/frouriolabs/react-paper-viewer/commit/60f5c8ef825bce65a7a28e0f6d6ac7d0c11dae2e))
+
 ### [0.1.2](https://github.com/frouriolabs/react-paper-viewer/compare/v0.1.1...v0.1.2) (2022-06-04)
 
 
