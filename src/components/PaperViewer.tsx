@@ -165,7 +165,8 @@ export const PaperViewer = (
 
         html2canvasRef.current.style.transform = ''
         html2canvasRef.current.parentElement.style.transform = ''
-        const canvas = await html2canvas.default(html2canvasRef.current)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const canvas = await (html2canvas as any)(html2canvasRef.current)
         html2canvasRef.current.style.transform = currentTransform
         html2canvasRef.current.parentElement.style.transform = parentTransform
 
