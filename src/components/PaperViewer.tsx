@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas'
+import * as html2canvas from 'html2canvas'
 import type { PropsWithChildren } from 'react'
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
@@ -165,7 +165,7 @@ export const PaperViewer = (
 
         html2canvasRef.current.style.transform = ''
         html2canvasRef.current.parentElement.style.transform = ''
-        const canvas = await html2canvas(html2canvasRef.current)
+        const canvas = await html2canvas.default(html2canvasRef.current)
         html2canvasRef.current.style.transform = currentTransform
         html2canvasRef.current.parentElement.style.transform = parentTransform
 
