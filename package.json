@@ -60,5 +60,8 @@
     "stylelint-config-styled-components": "^0.1.1",
     "typescript": "^4.6.3",
     "vite": "^2.9.5"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1"
   }
 }

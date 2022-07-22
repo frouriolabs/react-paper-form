@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import styled from 'styled-components'
 import './App.css'
+import type { PaperViewerToCanvas } from './components/PaperViewer'
 import { PaperViewer } from './components/PaperViewer'
 import logo from './logo.svg'
 
@@ -23,11 +24,27 @@ const texts = [{ id: 0, top: 20, left: 20, text: 'sample text' }]
 
 function App() {
   const [count, setCount] = useState(0)
+  const toCanvasRef = useRef<PaperViewerToCanvas>()
+  const download = async () => {
+    if (!toCanvasRef.current) return
+
+    const canvas = await toCanvasRef.current()
+    const dataURL = canvas.toDataURL()
+    const a = document.createElement('a')
+    a.download = 'sample.png'
+    a.href = dataURL
+    a.click()
+  }
 
   return (
     <div className="App">
       <Container>
-        <PaperViewer src="/src/frourio.png">
+        <PaperViewer
+          src="/src/frourio.png"
+          onInit={({ toCanvas }) => {
+            toCanvasRef.current = toCanvas
+          }}
+        >
           {texts.map((t) => (
             <Text key={t.id} style={{ top: `${t.top}px`, left: `${t.left}px` }}>
               {t.text}
@@ -35,6 +52,7 @@ function App() {
           ))}
         </PaperViewer>
       </Container>
+      <button onClick={download}>Download</button>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>Hello Vite + React!</p>

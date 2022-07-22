@@ -1,5 +1,9 @@
+import html2canvas from 'html2canvas'
 import type { PropsWithChildren } from 'react'
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+
+export type PaperViewerToCanvas = () => Promise<HTMLCanvasElement>
+export type PaperViewerInit = (params: { toCanvas: PaperViewerToCanvas }) => void
 
 const containerStyle: React.CSSProperties = {
   position: 'relative',
@@ -29,10 +33,16 @@ const calcDistance = (touches: React.TouchList) =>
   ((touches[0].pageX - touches[1].pageX) ** 2 + (touches[0].pageY - touches[1].pageY) ** 2) ** 0.5
 
 export const PaperViewer = (
-  props: PropsWithChildren<{ src: string; zoomMax?: number; zoomMin?: number }>
+  props: PropsWithChildren<{
+    src: string
+    zoomMax?: number
+    zoomMin?: number
+    onInit?: PaperViewerInit
+  }>
 ) => {
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 })
   const containerRef = useRef<HTMLDivElement>(null)
+  const html2canvasRef = useRef<HTMLDivElement>(null)
   const [viewerWidth, setViewerWidth] = useState(0)
   const aspect = useMemo(() => naturalSize.width / naturalSize.height, [naturalSize])
   const viewerHeight = useMemo(() => viewerWidth / aspect, [viewerWidth, aspect])
@@ -141,6 +151,29 @@ export const PaperViewer = (
     return () => window.removeEventListener('resize', resize, false)
   }, [aspect, viewerWidth])
 
+  useEffect(() => {
+    if (!props.onInit) return
+
+    props.onInit({
+      toCanvas: async () => {
+        if (!html2canvasRef.current || !html2canvasRef.current.parentElement) {
+          throw new Error('Viewer does not exist.')
+        }
+
+        const currentTransform = html2canvasRef.current.style.transform
+        const parentTransform = html2canvasRef.current.parentElement.style.transform
+
+        html2canvasRef.current.style.transform = ''
+        html2canvasRef.current.parentElement.style.transform = ''
+        const canvas = await html2canvas(html2canvasRef.current)
+        html2canvasRef.current.style.transform = currentTransform
+        html2canvasRef.current.parentElement.style.transform = parentTransform
+
+        return canvas
+      },
+    })
+  }, [props])
+
   return (
     <div ref={containerRef} style={containerStyle}>
       <div style={{ ...viewerStyle, width: `${viewerWidth}px`, height: `${viewerHeight}px` }}>
@@ -150,16 +183,17 @@ export const PaperViewer = (
             transformOrigin: 'left top',
             width: `${viewerWidth}px`,
             height: `${viewerHeight}px`,
-            background: `center/contain no-repeat url(${props.src})`,
             transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
           }}
         >
           <div
+            ref={html2canvasRef}
             style={{
               position: 'relative',
               transformOrigin: 'left top',
               width: `${naturalSize.width}px`,
               height: `${naturalSize.height}px`,
+              background: `center/contain no-repeat url(${props.src})`,
               transform: `scale(${viewerWidth / naturalSize.width})`,
             }}
           >
