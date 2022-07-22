@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/frouriolabs/react-paper-viewer/compare/v0.2.0...v0.3.0) (2022-07-22)
+
+
+### Features
+
+* add viewer to canvas fn ([e7148e5](https://github.com/frouriolabs/react-paper-viewer/commit/e7148e5c888dcd98bf0cd4232c3229bc838743d3))
+
 ## [0.2.0](https://github.com/frouriolabs/react-paper-viewer/compare/v0.1.2...v0.2.0) (2022-06-04)
 
 
